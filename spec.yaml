@@ -1,0 +1,119 @@
+swagger: "2.0"
+info:
+  title: Tracing the Lost People
+  description: Trace the lost people with the help of Face Recognition
+  version: 1.0.0
+host: 127.0.0.1:5000
+basePath: /backend
+schemes:
+  - https
+paths:
+  /:
+    get:
+      summary: Returns the status of API.
+      description: To check whether the API is working or not.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+  /user:
+    get:
+      summary: Returns all users List.
+      description: To get all the data of existing Users.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+    post:
+      summary: to create a new user.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+    put:
+      summary: to update the existing user data.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+    delete:
+      summary: to completely delete the user.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+  /user/login:
+    post:
+      summary: for login to the application.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+  /user/logout:
+    post:
+      summary: for logout to the application.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+  /user/face/recognize:
+    post:
+      summary: For recognizing a image and getting data of that image.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+    delete:
+      summary: To clear all the data of tracking image table.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+  /adm/save_aadhar:
+    post:
+      summary: to save aadhar detail into the server.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+  /adm/save_fir:
+    post:
+      summary: to save FIR detail into the server.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+  /adm/extract_faces:
+    get:
+      summary: It will captures all the images from Aadhar and FIR table and extract faces from them.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+
+  /adm/trainimages:
+    get:
+      summary: for training of all the extracting faces and make a tranner from them.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
