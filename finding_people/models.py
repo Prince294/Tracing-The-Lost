@@ -43,7 +43,6 @@ class PathAndRename(object):
             return os.path.join(self.path, filename)
 
 
-
 # Create your models here.
 
 path_and_id_proof = PathAndRename('User Verfication ID Proof')
