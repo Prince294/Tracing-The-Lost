@@ -10,7 +10,7 @@ import os
 class PathAndRename(object):
 
     def __init__(self, sub_path):
-        self.path = 'static\\'+sub_path
+        self.path = 'staticFiles\\'+sub_path
         self.signature = 0
     
     def __call__(self, instance, filename):
@@ -48,6 +48,7 @@ class PathAndRename(object):
 path_and_id_proof = PathAndRename('User Verfication ID Proof')
 class User(models.Model):
     username = models.CharField(max_length=100,unique=True)
+    # user_profile = models.ImageField(max_length=100,unique=True)
     email = models.EmailField(max_length=100,unique=True)
     password = models.CharField(max_length=100)
     mobile = models.BigIntegerField(unique=True,null=True)
@@ -107,7 +108,7 @@ class FIRData(models.Model):
     
     
 path_and_rename_training = PathAndRename('TrainingImage')
-class TrainigImagesData(models.Model):
+class ExtractFacesData(models.Model):
     serial = models.BigIntegerField(blank=False)
     from_database = models.CharField(max_length=50,default='None')
     image = models.ImageField(upload_to=path_and_rename_training,blank=True)
@@ -129,18 +130,22 @@ class TrainedDataSet(models.Model):
     
 path_and_rename_tracking = PathAndRename('TrackingImage')
 class TrackingUserData(models.Model):
-    uid = models.BigIntegerField(unique=True,null=True)
+    case_id = models.BigIntegerField(unique=True,null=True)
     username = models.CharField(max_length=50)
-    profile = models.ImageField(upload_to=path_and_rename_tracking,default='None')
-    name = models.CharField(max_length=50,default='Unknown')
-    police_station_droped = models.CharField(max_length=200,null=True)
+    user_profile = models.ImageField(upload_to=path_and_rename_tracking)
+    case_name = models.CharField(max_length=50,default='Unknown')
+    police_station_id = models.CharField(max_length=200,null=True)
     time_at_droped = models.TimeField(default=datetime.now().time())
     date_at_droped = models.DateField(default=timezone.now)
     tracking_progress = models.CharField(max_length=20,default='Pending')
     
-
-class AllUsersTrackingData(models.Model):
-    uid = models.BigIntegerField(unique=True,null=True)
-    from_database = models.CharField(max_length=50)
-    database_serial = models.IntegerField()
+    
+    
+class PoliceStationData(models.Model):
+    station_id = models.AutoField(unique=True,primary_key=True,default=None)
+    address = models.CharField(max_length=200)
+    phone = models.BigIntegerField(unique=True)
+    email = models.EmailField(unique=True,null=True)
+    
+    
     

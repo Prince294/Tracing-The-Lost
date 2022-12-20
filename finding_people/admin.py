@@ -18,7 +18,7 @@ class LoggedInDataAdmin(admin.ModelAdmin):
 class LoggedInDataAdmin(admin.ModelAdmin):
     list_display = ['id','serial','fir_id','profile','name','father_name','address','phone_number','fir_type']
     
-@admin.register(TrainigImagesData)
+@admin.register(ExtractFacesData)
 class LoggedInDataAdmin(admin.ModelAdmin):
     list_display = ['id','image','serial','from_database']
     
@@ -33,9 +33,9 @@ class LoggedInDataAdmin(admin.ModelAdmin):
 
 @admin.register(TrackingUserData)
 class TrackingUserDataAdmin(admin.ModelAdmin):
-    list_display = ['id','username','profile','name','police_station_droped','time_at_droped','date_at_droped','tracking_progress']
+    list_display = ['id','case_id','username','user_profile','case_name','police_station_id','time_at_droped','date_at_droped','tracking_progress']
     
+@admin.register(PoliceStationData)
+class PoliceStationDataAdmin(admin.ModelAdmin):
+    list_display = ['station_id','address','phone','email']
 
-@admin.register(AllUsersTrackingData)
-class AllUsersTrackingData(admin.ModelAdmin):
-    list_display = ['id','uid','from_database','database_serial']

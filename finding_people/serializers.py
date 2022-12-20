@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, LoggedInData, AadharData, FIRData, TrainigImagesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, AllUsersTrackingData
+from .models import User, LoggedInData, AadharData, FIRData, ExtractFacesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, PoliceStationData
 from django.contrib.auth.hashers import make_password
 
 
@@ -52,9 +52,9 @@ class FIRDataSerializer(serializers.ModelSerializer):
         model = FIRData
         fields = ['id','serial','fir_id','profile','name','father_name','address','phone_number','fir_type']
         
-class TrainigImagesDataSerializer(serializers.ModelSerializer):
+class ExtractFacesDataSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TrainigImagesData
+        model = ExtractFacesData
         fields = ['id','image','serial','from_database']
         
 class CascadeAndTrainerDataSerializer(serializers.ModelSerializer):
@@ -71,10 +71,9 @@ class TrainedDataSetSerializer(serializers.ModelSerializer):
 class TrackingUserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrackingUserData
-        fields = ['id','username','profile','name','police_station_droped','time_at_droped','date_at_droped','tracking_progress']
-        
+        fields = ['id','case_id','username','user_profile','case_name','police_station_id','time_at_droped','date_at_droped','tracking_progress']
 
-class AllUsersTrackingData(serializers.ModelSerializer):
+class PoliceStationDataSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AllUsersTrackingData
-        fields = ['id','uid','from_database','database_serial']
+        model = PoliceStationData
+        fields = ['station_id','address','phone','email']

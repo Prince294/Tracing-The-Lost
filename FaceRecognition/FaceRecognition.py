@@ -90,7 +90,6 @@ def TakeImages(img):
 def TrackImages(img):
     harcascadePath = "haarcascade_frontalface_default.xml"
     faceCascade = cv2.CascadeClassifier(os.path.join(Path(__file__).parent,harcascadePath))
-    
     name = img.split('/')[-1]
     response = requests.get(img)
     img = Image.open(BytesIO(response.content))
@@ -99,7 +98,7 @@ def TrackImages(img):
 
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     
-    file = r"CascadeAndTrainer\trainner.yml"
+    file = r"staticFiles\\CascadeAndTrainer\trainner.yml"
     recognizer.read(os.path.join(Path(__file__).parent.parent,file))
 
     date = ""

@@ -1,3 +1,5 @@
+
+from datetime import datetime
 import glob
 from io import BufferedReader, BytesIO
 import random
@@ -8,8 +10,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from finding_people.utils import Util
-from .models import User, LoggedInData, AadharData, FIRData, TrainigImagesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData
-from .serializers import UserSerializer, LoggedInDataSerializer, AadharDataSerializer, FIRDataSerializer, TrainigImagesDataSerializer, CascadeAndTrainerDataSerializer, TrainedDataSetSerializer, TrackingUserDataSerializer
+from .models import User, LoggedInData, AadharData, FIRData, ExtractFacesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, PoliceStationData
+from .serializers import UserSerializer, LoggedInDataSerializer, AadharDataSerializer, FIRDataSerializer, ExtractFacesDataSerializer, CascadeAndTrainerDataSerializer, TrainedDataSetSerializer, TrackingUserDataSerializer, PoliceStationDataSerializer
 import json
 from rest_framework import status
 import uuid
@@ -74,6 +76,7 @@ def UserView(request):
                 if objectSerializer.is_valid():
                     
                     email_data = {
+                        'type':'otp',
                         'otp':email_otp,
                         'email_to': email,
                         'username':username
@@ -379,7 +382,7 @@ def FaceRecognize(request):
     
     if request.method == 'DELETE':
         var = TrackingUserData.objects.all().delete()
-        files = glob.glob(os.path.join(Path(__file__).parent.parent,'TrackingImage/*'))
+        files = glob.glob(os.path.join(Path(__file__).parent.parent,'staticFiles\\TrackingImage\\*'))
         for f in files:
             os.remove(f)
         res = {
@@ -388,19 +391,34 @@ def FaceRecognize(request):
         }
         return responseMaker(res,status.HTTP_202_ACCEPTED)
     
-    
     if request.method == 'POST':
         clientData = request.data
+        
         session = clientData['session']
         try:
+            case_id = str(datetime.now()).replace("-","").replace(" ","").replace(":","").replace(".","")[2:]
+            
             tableData = LoggedInData.objects.get(session=session)
             username = LoggedInDataSerializer(tableData).data['username']
             clientData['username']=username
+            clientData['case_id']=case_id
             clientData.pop('session')
             serializeTracking = TrackingUserDataSerializer(data=clientData)
             
             if serializeTracking.is_valid():
                 serializeTracking.save()
+                police_email = PoliceStationDataSerializer(PoliceStationData.objects.get(station_id=clientData['police_station_id'])).data['email']
+                
+                verify_link = defaultURL+"/police/verification/"+case_id
+                
+                
+                email_data = {
+                    'type':'police_verification',
+                    'name':username,
+                    'email_to': police_email,
+                    'verify_link':verify_link
+                }
+                Util.send_email(email_data)
                 
             else:
                 return Response(serializeTracking.errors,status.HTTP_400_BAD_REQUEST)
@@ -417,17 +435,15 @@ def FaceRecognize(request):
         idd = -1
         index = 0
         for i in range(len(tableData)):
-            if int(tableData[i]['id'])>idd:
+            if int(tableData[i]['case_id'])>idd:
                 index = i
-                idd = int(tableData[i]['id'])
+                idd = int(tableData[i]['case_id'])
         tableData = tableData[index]
-        idd = int(tableData['id'])
+        idd = int(tableData['case_id'])
        
-        img = defaultURL + tableData['profile']
+        img = defaultURL + tableData['user_profile']
         data = TrackImages(img)
-        
-        cv2.waitKey(10000)
-        
+   
         num = data[0]
         if not num == 'Unknown':
             recoveredbytes = num.to_bytes((num.bit_length() + 7) // 8, 'little')
@@ -437,31 +453,10 @@ def FaceRecognize(request):
             serial = int(num.split('-')[1])
             if from_db == 1:
                 data = AadharDataSerializer(AadharData.objects.get(serial=serial)).data
-                
-                updateData = {
-                    'name':data['name'],
-                    'tracking_progress':'Completed'
-                }
-                tableData = TrackingUserData.objects.get(id=idd)
-                trackimgSerializer = TrackingUserDataSerializer(tableData,data=updateData,partial=True)
-                if trackimgSerializer.is_valid():
-                    trackimgSerializer.save()
-                
-                
                 return Response(data,status.HTTP_200_OK)
                 
             elif from_db == 2:
                 data = FIRDataSerializer(FIRData.objects.get(serial=serial)).data
-                
-                updateData = {
-                    'name':data['name'],
-                    'tracking_progress':'Completed'
-                }
-                tableData = TrackingUserData.objects.get(id=idd)
-                trackimgSerializer = TrackingUserDataSerializer(tableData,data=updateData,partial=True)
-                if trackimgSerializer.is_valid():
-                    trackimgSerializer.save()
-                
                 return Response(data,status.HTTP_200_OK)
                 
         else:
@@ -477,7 +472,7 @@ def FaceRecognize(request):
 @api_view(['GET','DELETE'])
 def ExtractFaces(request):
     if request.method == 'DELETE':
-        var = TrainigImagesData.objects.all().delete()
+        var = ExtractFacesData.objects.all().delete()
         files = glob.glob(os.path.join(Path(__file__).parent.parent,'TrainingImage/*'))
         for f in files:
             os.remove(f)
@@ -531,8 +526,8 @@ def ExtractFaces(request):
         
         
         if res==True:
-            modelTrainingImage = TrainigImagesData.objects.all()
-            trainingImageSerializer = TrainigImagesDataSerializer(modelTrainingImage,many=True).data
+            modelTrainingImage = ExtractFacesData.objects.all()
+            trainingImageSerializer = ExtractFacesDataSerializer(modelTrainingImage,many=True).data
             urls = []
             for i in trainingImageSerializer:
                 urls.append(defaultURL + i['image'])
@@ -599,7 +594,7 @@ def TrainImageAndSave(request):
     if request.method == 'POST':
         trainingData = request.data
             
-        serializerTrainingImage = TrainigImagesDataSerializer(data=trainingData)
+        serializerTrainingImage = ExtractFacesDataSerializer(data=trainingData)
         if serializerTrainingImage.is_valid():
             serializerTrainingImage.save()
             res = {
@@ -673,6 +668,47 @@ def FIRDataSaver(request):
             }
             return responseMaker(res,status.HTTP_201_CREATED)
         return errorResponseMaker(firSerializer.errors)
+    
+
+@api_view(['GET','POST','DELETE'])
+def PoliceStationDataFunction(request):
+    if request.method == 'GET':
+        tableData = PoliceStationDataSerializer(PoliceStationData.objects.all(),many=True).data
+        return Response(tableData,status.HTTP_200_OK)
+    
+    if request.method == 'POST':
+        userData = request.data
+        StationSerializer = PoliceStationDataSerializer(data=userData)
+        if StationSerializer.is_valid():
+            StationSerializer.save()
+            res = {
+                'status':'success',
+                'message':'Data Successfully Inserted'
+            }
+            return responseMaker(res,status.HTTP_201_CREATED)
+        return errorResponseMaker(StationSerializer.errors)
+        
+    if request.method == 'DELETE':
+        var = PoliceStationData.objects.all().delete()
+        res = {
+            'status':'success',
+            'message':'All Database Data Been Cleared'
+        }
+        return responseMaker(res,status.HTTP_202_ACCEPTED)
+    
+@api_view(['GET'])
+def SuspectArrivePoliceStation(request,case_id):
+    if request.method == 'GET':
+        data = {
+            'tracking_progress':'at Police Station'
+        }
+        trackingSerializer = TrackingUserDataSerializer(TrackingUserData.objects.get(case_id=case_id),data=data,partial=True)
+        if trackingSerializer.is_valid():
+            trackingSerializer.save()
+            return Response("Thank You!!!",status.HTTP_202_ACCEPTED)
+        return errorResponseMaker(trackingSerializer.error)
+    
+    
     
     
     

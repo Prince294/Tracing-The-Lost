@@ -10,16 +10,33 @@ from pathlib import Path
 class Util:
     @staticmethod
     def send_email(data):
+        subject = ''
+        message = ''
+        email_name = ''
         
-        contxt = {
-            'username':data['username'],
-            'OTP':data['otp']
-        }
-        message = get_template('mail.html').render(contxt)
+        typeof_mail = data['type']
+        if typeof_mail == 'otp':
+            contxt = {
+                'username':data['username'],
+                'OTP':data['otp']
+            }
+            message = get_template('mail.html').render(contxt)
+            subject = 'Verify Your Email'
+            email_name = "TTL - Verification "
+            
+        elif typeof_mail == 'police_verification':
+            contxt = {
+                'name':data['name'],
+                'verify_link':data['verify_link']
+            }
+            message = get_template('police-verification.html').render(contxt)
+            subject='Found a Suspect in Your Location'
+            email_name = 'TTL - Suspect Verification '
+        
         email = EmailMessage(
-            subject='Verify Your Email',
+            subject=subject,
             body=message,
-            from_email="TTL - Verification "+os.environ.get('EMAIL_FROM'),
+            from_email=email_name+os.environ.get('EMAIL_FROM'),
             to=[data['email_to']]
         )
         email.content_subtype = 'html'
