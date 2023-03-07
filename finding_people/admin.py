@@ -16,7 +16,7 @@ class LoggedInDataAdmin(admin.ModelAdmin):
     
 @admin.register(AadharData)
 class LoggedInDataAdmin(admin.ModelAdmin):
-    list_display = ['id','serial','card_number','VID','profile','name','DOB', 'gender','address']
+    list_display = ['id','serial','card_number','VID','profile','name','DOB', 'gender','address','mobile']
 
 @admin.register(FIRData)
 class LoggedInDataAdmin(admin.ModelAdmin):

@@ -108,6 +108,7 @@ class AadharData(models.Model):
     DOB = models.CharField(max_length=10)
     gender = models.CharField(max_length=10)
     address = models.CharField(max_length=100)
+    mobile = models.BigIntegerField(unique=True,null=True)
     
     
 path_and_rename_fir = PathAndRename('FIR Data')
