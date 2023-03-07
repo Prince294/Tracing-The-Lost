@@ -6,6 +6,10 @@ from .models import *
 class UserAdmin(admin.ModelAdmin):
     list_display = ['id','email','username','password','mobile','aadhar_number','email_otp','email_verification','mobile_otp','mobile_verification','aadhar_verification','verified_user','verified_user_id_proof']
     
+@admin.register(UserDetails)
+class UserDetailsAdmin(admin.ModelAdmin):
+    list_display = ['id','username','email','mobile','aadhar_number','name','dob','gender']
+    
 @admin.register(LoggedInData)
 class LoggedInDataAdmin(admin.ModelAdmin):
     list_display = ['id','username','session']

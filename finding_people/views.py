@@ -112,7 +112,7 @@ def UserView(request):
                     'message':'Successfully Updated',
                 }
                 return responseMaker(res,status.HTTP_201_CREATED)
-            
+    
             return errorResponseMaker(objectSerializer.errors)
         except:
             res = {
@@ -139,9 +139,9 @@ def UserView(request):
             }
             return responseMaker(res,status.HTTP_404_NOT_FOUND)
    
-@api_view(['PUT'])
+@api_view(['POST'])
 def VerifyUser(request):
-    if request.method == 'PUT':
+    if request.method == 'POST':
         clientData = request.data
         username = clientData.get('username')
         if clientData['verification_off'] == 'email':
@@ -154,7 +154,6 @@ def VerifyUser(request):
                         'email_verification':True
                     }
                     objectSerializer = UserSerializer(Userdetails,data=clientData,partial=True)
-                    print(objectSerializer)
                     
                     if objectSerializer.is_valid():
                         objectSerializer.save()
@@ -172,7 +171,6 @@ def VerifyUser(request):
                     }
                     return responseMaker(res,status.HTTP_404_NOT_FOUND)
             except Exception as e:
-                print(e)
                 res = {
                     'status':'error',
                     'message':'No User Found',
@@ -207,7 +205,6 @@ def VerifyUser(request):
                     }
                     return responseMaker(res,status.HTTP_404_NOT_FOUND)
             except Exception as e:
-                print(e)
                 res = {
                     'status':'error',
                     'message':'No User Found',
@@ -424,7 +421,6 @@ def FaceRecognize(request):
                 return Response(serializeTracking.errors,status.HTTP_400_BAD_REQUEST)
             
         except Exception as e:
-            print(e)
             res = {
                 'status':'error',
                 'message':'Session Id Not Found'

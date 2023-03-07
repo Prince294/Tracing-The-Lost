@@ -66,6 +66,14 @@ class LoggedInData(models.Model):
     session = models.CharField(max_length=50,unique=True,blank=True)
     username = models.CharField(max_length=100,unique=True)
 
+class UserDetails(models.Model):
+    username = models.CharField(max_length=100,unique=True)
+    email = models.EmailField(max_length=100,unique=True)
+    mobile = models.BigIntegerField(unique=True,null=True)
+    aadhar_number = models.BigIntegerField(unique=True)
+    name = models.CharField(max_length=50)
+    DOB = models.CharField(max_length=10)
+    gender = models.CharField(max_length=10)
 
 @deconstructible
 class Serial_Generator(object):
@@ -146,6 +154,8 @@ class PoliceStationData(models.Model):
     address = models.CharField(max_length=200)
     phone = models.BigIntegerField(unique=True)
     email = models.EmailField(unique=True,null=True)
+    
+
     
     
     

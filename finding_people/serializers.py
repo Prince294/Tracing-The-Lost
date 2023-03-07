@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, LoggedInData, AadharData, FIRData, ExtractFacesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, PoliceStationData
+from .models import User,UserDetails, LoggedInData, AadharData, FIRData, ExtractFacesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, PoliceStationData
 from django.contrib.auth.hashers import make_password
 
 
@@ -21,7 +21,12 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Please Maintain Password Criteria')
         value = make_password(value)
         return value
-        
+    
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetails
+        fields = ['id','username','email','mobile','aadhar_number','name','dob','gender']
     
 
 class LoggedInDataSerializer(serializers.ModelSerializer):
