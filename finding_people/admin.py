@@ -8,7 +8,7 @@ class UserAdmin(admin.ModelAdmin):
     
 @admin.register(UserDetails)
 class UserDetailsAdmin(admin.ModelAdmin):
-    list_display = ['id','username','email','mobile','aadhar_number','name','dob','gender']
+    list_display = ['id','username','email','mobile','aadhar_number','name','DOB','gender']
     
 @admin.register(LoggedInData)
 class LoggedInDataAdmin(admin.ModelAdmin):

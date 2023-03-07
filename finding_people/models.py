@@ -10,10 +10,16 @@ import os
 class PathAndRename(object):
 
     def __init__(self, sub_path):
+        
         self.path = 'staticFiles\\'+sub_path
         self.signature = 0
     
     def __call__(self, instance, filename):
+        
+        dir = os.path.join(Path(__file__).parent.parent, self.path)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        
         count = 0
         for paths in os.listdir(os.path.join(Path(__file__).parent.parent,self.path)):
             count+=1
@@ -82,9 +88,11 @@ class Serial_Generator(object):
     
     def __call__(self):
         count = 0
-        for paths in os.listdir(os.path.join(Path(__file__).parent.parent,self.path)):
-            count+=1
-        
+        try:
+            for paths in os.listdir(os.path.join(Path(__file__).parent.parent,self.path)):
+                count+=1
+        except:
+            count=0
         name = str(count+1)
         return name
 

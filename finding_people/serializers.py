@@ -26,7 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDetails
-        fields = ['id','username','email','mobile','aadhar_number','name','dob','gender']
+        fields = ['id','username','email','mobile','aadhar_number','name','DOB','gender']
     
 
 class LoggedInDataSerializer(serializers.ModelSerializer):
