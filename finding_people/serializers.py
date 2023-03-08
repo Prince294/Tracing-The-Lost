@@ -50,7 +50,7 @@ class LoggedInDataSerializer(serializers.ModelSerializer):
 class AadharDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = AadharData
-        fields = ['id','serial','card_number','VID','profile','name','DOB', 'gender','address']
+        fields = ['id','serial','card_number','VID','profile','name','DOB', 'gender','address','mobile']
         
 class FIRDataSerializer(serializers.ModelSerializer):
     class Meta:
