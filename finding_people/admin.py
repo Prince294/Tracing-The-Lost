@@ -15,23 +15,23 @@ class LoggedInDataAdmin(admin.ModelAdmin):
     list_display = ['id','username','session']
     
 @admin.register(AadharData)
-class LoggedInDataAdmin(admin.ModelAdmin):
+class AaadharAdmin(admin.ModelAdmin):
     list_display = ['id','serial','card_number','VID','profile','name','DOB', 'gender','address','mobile']
 
 @admin.register(FIRData)
-class LoggedInDataAdmin(admin.ModelAdmin):
+class FIRDataAdmin(admin.ModelAdmin):
     list_display = ['id','serial','fir_id','profile','name','father_name','address','phone_number','fir_type']
     
 @admin.register(ExtractFacesData)
-class LoggedInDataAdmin(admin.ModelAdmin):
+class ExtractFacesDataAdmin(admin.ModelAdmin):
     list_display = ['id','image','serial','from_database']
     
 @admin.register(CascadeAndTrainerData)
-class LoggedInDataAdmin(admin.ModelAdmin):
+class CascadeAndTrainerDataAdmin(admin.ModelAdmin):
     list_display = ['id','name','file_name']
     
 @admin.register(TrainedDataSet)
-class LoggedInDataAdmin(admin.ModelAdmin):
+class TrainedDataSetAdmin(admin.ModelAdmin):
     list_display = ['id','serial','name','aadhar_number']
     
 
