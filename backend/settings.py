@@ -28,6 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_API_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CORS_ORIGIN_ALLOW_ALL = True
 ALLOWED_HOSTS = ["*"]
 DEFAULT_URL = 'http://127.0.0.1:8000'
 
@@ -74,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'

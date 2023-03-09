@@ -774,3 +774,71 @@ def SuspectArrivePoliceStation(request, case_id):
                 trackingSerializer.save()
                 return render(request, 'ThankYou/thankYou.html')
         return render(request, 'notfound/notFound.html')
+
+
+@api_view(['POST'])
+def ValidateUsername(request):
+    if request.method == "POST":
+        userData = request.data
+        serializerUser = UserSerializer(User.objects.all(), many=True).data
+        returnValue = True
+        for data in serializerUser:
+            if data['username'].lower() == userData['username'].lower():
+                returnValue = False
+        if returnValue:
+            res = {
+                'status': 'success',
+                'message': 'Valid Username'
+            }
+            return responseMaker(res, status.HTTP_202_ACCEPTED)
+        else:
+            res = {
+                'status': 'error',
+                'message': 'Not a Valid Username'
+            }
+            return responseMaker(res, status.HTTP_409_CONFLICT)
+
+@api_view(['POST'])
+def ValidateMobile(request):
+    if request.method == "POST":
+        userData = request.data
+        serializerUser = UserSerializer(User.objects.all(), many=True).data
+        returnValue = True
+        for data in serializerUser:
+            if data['mobile'] == userData['mobile']:
+                returnValue = False
+        if returnValue:
+            res = {
+                'status': 'success',
+                'message': 'Valid Mobile'
+            }
+            return responseMaker(res, status.HTTP_202_ACCEPTED)
+        else:
+            res = {
+                'status': 'error',
+                'message': 'Not a Valid Mobile'
+            }
+            return responseMaker(res, status.HTTP_409_CONFLICT)
+
+
+@api_view(['POST'])
+def ValidateEmail(request):
+    if request.method == "POST":
+        userData = request.data
+        serializerUser = UserSerializer(User.objects.all(), many=True).data
+        returnValue = True
+        for data in serializerUser:
+            if data['email'].lower() == userData['email'].lower():
+                returnValue = False
+        if returnValue:
+            res = {
+                'status': 'success',
+                'message': 'Valid Email'
+            }
+            return responseMaker(res, status.HTTP_202_ACCEPTED)
+        else:
+            res = {
+                'status': 'error',
+                'message': 'Not a Valid Email'
+            }
+            return responseMaker(res, status.HTTP_409_CONFLICT)
