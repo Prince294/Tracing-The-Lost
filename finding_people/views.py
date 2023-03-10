@@ -36,6 +36,7 @@ def home(request):
         })
 
 
+@csrf_exempt
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def UserView(request):
     if request.method == 'GET':
@@ -52,6 +53,7 @@ def UserView(request):
 
     if request.method == 'POST':
         clientData = request.data
+        clientData['mobile'] = int(clientData['mobile'])
         username = clientData.get('username')
         email = clientData.get('email')
         mobile = clientData.get('mobile')
@@ -78,7 +80,6 @@ def UserView(request):
                 clientData['mobile_otp'] = mobile_otp
                 objectSerializer = UserSerializer(data=clientData)
                 if objectSerializer.is_valid():
-
                     email_data = {
                         'type': 'otp',
                         'otp': email_otp,
@@ -100,14 +101,14 @@ def UserView(request):
                         'message': 'User Created Successfully',
                     }
                     return responseMaker(res, status.HTTP_201_CREATED)
-
+                print(objectSerializer.errors)
                 return errorResponseMaker(objectSerializer.errors)
 
     if request.method == 'PUT':
         clientData = request.data
         username = clientData.get('username')
         try:
-            Userdetails = User.objects.get(username=username)
+            Userdetails = User.objects.get(username=username.lower())
             objectSerializer = UserSerializer(
                 Userdetails, data=clientData, partial=True)
             if objectSerializer.is_valid():
@@ -798,10 +799,12 @@ def ValidateUsername(request):
             }
             return responseMaker(res, status.HTTP_409_CONFLICT)
 
+
 @api_view(['POST'])
 def ValidateMobile(request):
     if request.method == "POST":
         userData = request.data
+        userData['mobile'] = int(userData['mobile'])
         serializerUser = UserSerializer(User.objects.all(), many=True).data
         returnValue = True
         for data in serializerUser:

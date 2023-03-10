@@ -25,12 +25,36 @@ class UserSerializer(serializers.ModelSerializer):
         value = make_password(value)
         return value
 
+    def validate_username(self, value):
+        value = value.lower()
+        return value
+
+    def validate_email(self, value):
+        value = value.lower()
+        return value
+
+    def validate_mobile(self, value):
+        value = int(value)
+        return value
+
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDetails
         fields = ['id', 'username', 'email', 'mobile',
                   'aadhar_number', 'name', 'DOB', 'gender']
+
+    def validate_username(self, value):
+        value = value.lower()
+        return value
+
+    def validate_email(self, value):
+        value = value.lower()
+        return value
+
+    def validate_mobile(self, value):
+        value = int(value)
+        return value
 
 
 class LoggedInDataSerializer(serializers.ModelSerializer):
