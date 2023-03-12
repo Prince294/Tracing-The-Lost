@@ -37,6 +37,14 @@ class UserSerializer(serializers.ModelSerializer):
         value = int(value)
         return value
 
+    def validate_email_otp(self, value):
+        value = int(value)
+        return value
+
+    def validate_mobile_otp(self, value):
+        value = int(value)
+        return value
+
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:

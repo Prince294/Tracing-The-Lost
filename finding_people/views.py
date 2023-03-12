@@ -53,7 +53,6 @@ def UserView(request):
 
     if request.method == 'POST':
         clientData = request.data
-        clientData['mobile'] = int(clientData['mobile'])
         username = clientData.get('username')
         email = clientData.get('email')
         mobile = clientData.get('mobile')
@@ -94,15 +93,14 @@ def UserView(request):
                     }
 
                     # Util.send_sms(mobile_data)
-
                     objectSerializer.save()
-                    res = {
-                        'status': 'success',
-                        'message': 'User Created Successfully',
-                    }
-                    return responseMaker(res, status.HTTP_201_CREATED)
-                print(objectSerializer.errors)
-                return errorResponseMaker(objectSerializer.errors)
+                    return LoginTrigger(clientData, True)
+
+                res = {
+                    'status': 'error',
+                    'message': 'Something want wrong',
+                }
+                return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'PUT':
         clientData = request.data
@@ -119,7 +117,11 @@ def UserView(request):
                 }
                 return responseMaker(res, status.HTTP_201_CREATED)
 
-            return errorResponseMaker(objectSerializer.errors)
+            res = {
+                'status': 'error',
+                'message': 'Something want wrong',
+            }
+            return responseMaker(res, status.HTTP_400_BAD_REQUEST)
         except:
             res = {
                 'status': 'error',
@@ -131,7 +133,7 @@ def UserView(request):
         clientData = request.data
         username = clientData.get('username')
         try:
-            Userdetails = User.objects.get(username=username)
+            Userdetails = User.objects.get(username=username.lower())
             Userdetails.delete()
             res = {
                 'status': 'success',
@@ -150,20 +152,24 @@ def UserView(request):
 def VerifyUser(request):
     if request.method == 'POST':
         clientData = request.data
-        username = clientData.get('username')
+        session = clientData.get('session')
+        username = LoggedInDataSerializer(
+            LoggedInData.objects.get(session=session)).data['username']
         if clientData['verification_off'] == 'email':
             try:
-                Userdetails = User.objects.get(username=username)
+                Userdetails = User.objects.get(username=username.lower())
                 tableData = UserSerializer(Userdetails).data
-                if clientData['email_otp'] == tableData['email_otp']:
-                    clientData = {
-                        'email_otp': None,
+                if int(clientData['email_otp']) == tableData['email_otp']:
+                    updateData = {
+                        'email_otp': 0,
                         'email_verification': True
                     }
                     objectSerializer = UserSerializer(
-                        Userdetails, data=clientData, partial=True)
+                        Userdetails, data=updateData, partial=True)
 
                     if objectSerializer.is_valid():
+                        print("match")
+
                         objectSerializer.save()
                         res = {
                             'status': 'success',
@@ -171,7 +177,11 @@ def VerifyUser(request):
                         }
                         return responseMaker(res, status.HTTP_201_CREATED)
 
-                    return errorResponseMaker(objectSerializer.errors)
+                    res = {
+                        'status': 'error',
+                        'message': 'Something want wrong',
+                    }
+                    return responseMaker(res, status.HTTP_400_BAD_REQUEST)
                 else:
                     res = {
                         'status': 'error',
@@ -206,7 +216,11 @@ def VerifyUser(request):
                         }
                         return responseMaker(res, status.HTTP_201_CREATED)
 
-                    return errorResponseMaker(objectSerializer.errors)
+                    res = {
+                        'status': 'error',
+                        'message': 'Something want wrong',
+                    }
+                    return responseMaker(res, status.HTTP_400_BAD_REQUEST)
                 else:
                     res = {
                         'status': 'error',
@@ -230,6 +244,26 @@ def UserLogin(request):
 
 
 @api_view(['POST'])
+def validateLogin(request):
+    if request.method == 'POST':
+        clientData = request.data['session']
+        try:
+            tableData = LoggedInDataSerializer(
+                LoggedInData.objects.get(session=clientData)).data
+            res = {
+                'status': 'success',
+                'message': 'User Logged In',
+            }
+            return responseMaker(res, status.HTTP_202_ACCEPTED)
+        except:
+            res = {
+                'status': 'error',
+                'message': 'User not found',
+            }
+            return responseMaker(res, status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
 def UserLogout(request):
     if request.method == 'POST':
         userData = request.data
@@ -239,7 +273,7 @@ def UserLogout(request):
                 LoggedInData.objects.get(session=session)).data
 
             data = {
-                'username': tableData.get('username'),
+                'username': tableData.get('username').lower(),
                 'session': ''
             }
             loginSerializer = LoggedInDataSerializer(
@@ -252,7 +286,11 @@ def UserLogout(request):
                     'message': 'Successfully Logged Out',
                 }
                 return responseMaker(res, status.HTTP_202_ACCEPTED)
-            return errorResponseMaker(loginSerializer.errors)
+            res = {
+                'status': 'error',
+                'message': 'Something want wrong',
+            }
+            return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
         except:
             res = {
@@ -268,10 +306,10 @@ def LoginTrigger(clientData, needReturn):
     if clientData.get('username') is not None:
         try:
             username = clientData.get('username')
-            userData = UserSerializer(User.objects.get(username=username)).data
+            userData = UserSerializer(
+                User.objects.get(username=username.lower())).data
             if check_password(clientData['password'], userData['password']):
                 session = str(uuid.uuid4())
-
                 while(True):
                     if checkForSessionIdExist(session):
                         break
@@ -280,13 +318,25 @@ def LoginTrigger(clientData, needReturn):
                 LoggedInTableUpdate(username, session)
 
                 if needReturn:
+                    if userData['email_verification']:
+                        res = {
+                            'status': 'success',
+                            'message': 'Successfully Logged In',
+                            'session_id': session,
+                            'onStep': -1
 
-                    res = {
-                        'status': 'success',
-                        'message': 'Successfully Logged In',
-                        'session_id': session
-                    }
-                    return responseMaker(res, status.HTTP_200_OK)
+                        }
+                        return responseMaker(res, status.HTTP_200_OK)
+                    else:
+                        res = {
+                            'status': 'success',
+                            'message': 'Successfully Logged In',
+                            'session_id': session,
+                            'data': userData,
+                            'onStep': 4
+                        }
+                        return responseMaker(res, status.HTTP_200_OK)
+
             else:
                 if needReturn:
                     res = {
@@ -306,9 +356,10 @@ def LoginTrigger(clientData, needReturn):
     else:
         try:
             email = clientData.get('email')
-            userData = UserSerializer(User.objects.get(email=email)).data
+            userData = UserSerializer(
+                User.objects.get(email=email.lower())).data
 
-            if userData['password'] == clientData.get('password'):
+            if check_password(clientData['password'], userData['password']):
 
                 session = str(uuid.uuid4())
 
@@ -316,15 +367,28 @@ def LoginTrigger(clientData, needReturn):
                     if checkForSessionIdExist(session):
                         break
                     session = str(uuid.uuid4())
-
+                username = userData['username']
                 LoggedInTableUpdate(username, session)
+
                 if needReturn:
-                    res = {
-                        'status': 'success',
-                        'message': 'Successfully Logged In',
-                        'session_id': session
-                    }
-                    return responseMaker(res, status.HTTP_200_OK)
+                    if userData['email_verification']:
+                        res = {
+                            'status': 'success',
+                            'message': 'Successfully Logged In',
+                            'session_id': session,
+                            'onStep': -1
+
+                        }
+                        return responseMaker(res, status.HTTP_200_OK)
+                    else:
+                        res = {
+                            'status': 'success',
+                            'message': 'Successfully Logged In',
+                            'session_id': session,
+                            'data': userData,
+                            'onStep': 4
+                        }
+                        return responseMaker(res, status.HTTP_200_OK)
             else:
                 if needReturn:
                     res = {
@@ -342,11 +406,11 @@ def LoginTrigger(clientData, needReturn):
 
 
 def LoggedInTableUpdate(username, session):
+    username = username.lower()
     loggedData = {
         'username': username,
         'session': session
     }
-
     try:
         tableData = LoggedInData.objects.get(username=username)
         loginSerializer = LoggedInDataSerializer(tableData, data=loggedData)
@@ -380,16 +444,6 @@ def responseMaker(comingRes, statusCode):
     for i in range(0, len(key)):
         res[key[i]] = value[i]
     return Response(res, statusCode)
-
-
-def errorResponseMaker(error):
-    res = {'status': 'error'}
-    jsonData = json.loads(json.dumps(error))
-    keys = list(jsonData.keys())
-    for i in range(len(keys)):
-        res[keys[i]] = jsonData[keys[i]][0]
-
-    return Response(res, status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -625,7 +679,11 @@ def AadharDetail(request):
             }
             return responseMaker(res, status.HTTP_201_CREATED)
 
-        return errorResponseMaker(serializerAadhar.errors)
+        res = {
+            'status': 'error',
+            'message': 'Something want wrong',
+        }
+        return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
 
 def cv2_to_normal_image(img_arr, serial):
@@ -685,7 +743,11 @@ def CascadeFileAndTrainer(request):
                     'message': 'Successfully Inserted Trainer File'
                 }
             return responseMaker(res, status.HTTP_201_CREATED)
-        return errorResponseMaker(cascadeSerializer.errors)
+        res = {
+            'status': 'error',
+            'message': 'Something want wrong',
+        }
+        return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'PUT':
         userData = request.data
@@ -708,7 +770,11 @@ def CascadeFileAndTrainer(request):
                     'message': 'Successfully Updated Trainer File'
                 }
             return responseMaker(res, status.HTTP_201_CREATED)
-        return errorResponseMaker(cascadeSerializer.errors)
+        res = {
+            'status': 'error',
+            'message': 'Something want wrong',
+        }
+        return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])
@@ -727,7 +793,11 @@ def FIRDataSaver(request):
                 'message': 'Data Successfully Inserted'
             }
             return responseMaker(res, status.HTTP_201_CREATED)
-        return errorResponseMaker(firSerializer.errors)
+        res = {
+            'status': 'error',
+            'message': 'Something want wrong',
+        }
+        return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -747,7 +817,11 @@ def PoliceStationDataFunction(request):
                 'message': 'Data Successfully Inserted'
             }
             return responseMaker(res, status.HTTP_201_CREATED)
-        return errorResponseMaker(StationSerializer.errors)
+        res = {
+            'status': 'error',
+            'message': 'Something want wrong',
+        }
+        return responseMaker(res, status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'DELETE':
         var = PoliceStationData.objects.all().delete()

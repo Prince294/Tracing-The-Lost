@@ -24,6 +24,8 @@ urlpatterns = [
     path('user/verification', views.VerifyUser, name="userVerification"),
 
     path('user/login', views.UserLogin, name="userLogin"),
+    path('user/validate/login', views.validateLogin, name="validateLogin"),
+
     path('user/logout', views.UserLogout, name="userLogout"),
     path('user/face/recognize', views.FaceRecognize, name="faceRecognize"),
     path('user/validate/username', views.ValidateUsername, name="ValidateUsername"),
