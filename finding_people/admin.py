@@ -12,8 +12,8 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(UserDetails)
 class UserDetailsAdmin(admin.ModelAdmin):
-    list_display = ['id', 'username', 'email', 'mobile',
-                    'aadhar_number', 'name', 'DOB', 'gender']
+    list_display = ['id', 'profile_image', 'username', 'email', 'mobile',
+                    'aadhar_number', 'name', 'DOB', 'gender', 'kyc_status', 'is_verifed_user']
 
 
 @admin.register(LoggedInData)

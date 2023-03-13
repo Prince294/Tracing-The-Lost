@@ -11,8 +11,8 @@ from rest_framework.response import Response
 from django.shortcuts import render
 
 from finding_people.utils import Util
-from .models import User, LoggedInData, AadharData, FIRData, ExtractFacesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, PoliceStationData
-from .serializers import UserSerializer, LoggedInDataSerializer, AadharDataSerializer, FIRDataSerializer, ExtractFacesDataSerializer, CascadeAndTrainerDataSerializer, TrainedDataSetSerializer, TrackingUserDataSerializer, PoliceStationDataSerializer
+from .models import User, LoggedInData, AadharData, FIRData, ExtractFacesData, CascadeAndTrainerData, TrainedDataSet, TrackingUserData, PoliceStationData, UserDetails
+from .serializers import UserSerializer, LoggedInDataSerializer, AadharDataSerializer, FIRDataSerializer, ExtractFacesDataSerializer, CascadeAndTrainerDataSerializer, TrainedDataSetSerializer, TrackingUserDataSerializer, PoliceStationDataSerializer, UserDetailsSerializer
 import json
 from rest_framework import status
 import uuid
@@ -39,18 +39,6 @@ def home(request):
 @csrf_exempt
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def UserView(request):
-    if request.method == 'GET':
-        try:
-            modelUser = User.objects.all()
-            serializerUser = UserSerializer(modelUser, many=True)
-            return Response(serializerUser.data)
-        except:
-            res = {
-                'status': 'error',
-                'message': 'No Data Found'
-            }
-            return responseMaker(res, status.HTTP_404_NOT_FOUND)
-
     if request.method == 'POST':
         clientData = request.data
         username = clientData.get('username')
@@ -93,6 +81,16 @@ def UserView(request):
                     }
 
                     # Util.send_sms(mobile_data)
+
+                    userDetailsTableData = {
+                        username: clientData['username'],
+                        mobile: clientData['mobile'],
+                        email: clientData['email']
+                    }
+                    userDetailsSerializer = UserDetailsSerializer(data=userDetailsTableData)
+                    if userDetailsSerializer.is_valid():
+                        userDetailsSerializer.save()
+                        
                     objectSerializer.save()
                     return LoginTrigger(clientData, True)
 
@@ -149,6 +147,27 @@ def UserView(request):
 
 
 @api_view(['POST'])
+def GetUserData(request):
+    if request.method == 'POST':
+        session = request.data.get('session')
+        username = LoggedInDataSerializer(LoggedInData.objects.get(session=session)).data['username']
+
+        try:
+            userData = UserDetailsSerializer(UserDetails.objects.get(username=username)).data
+            res = {
+                'status': 'success',
+                'data': userData
+            }
+            return responseMaker(res, status.HTTP_200_OK)
+        except:
+            res = {
+                'status': 'error',
+                'message': 'No Data Found'
+            }
+            return responseMaker(res, status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
 def VerifyUser(request):
     if request.method == 'POST':
         clientData = request.data
@@ -168,8 +187,6 @@ def VerifyUser(request):
                         Userdetails, data=updateData, partial=True)
 
                     if objectSerializer.is_valid():
-                        print("match")
-
                         objectSerializer.save()
                         res = {
                             'status': 'success',
@@ -250,11 +267,22 @@ def validateLogin(request):
         try:
             tableData = LoggedInDataSerializer(
                 LoggedInData.objects.get(session=clientData)).data
-            res = {
-                'status': 'success',
-                'message': 'User Logged In',
-            }
-            return responseMaker(res, status.HTTP_202_ACCEPTED)
+            userData = UserSerializer(
+                User.objects.get(username=tableData['username'])).data
+            if not userData['email_verification']:
+                res = {
+                    'status': 'success',
+                    'message': 'User Logged In',
+                    'onStep': 4
+                }
+                return responseMaker(res, status.HTTP_202_ACCEPTED)
+            else:
+                res = {
+                    'status': 'success',
+                    'message': 'User Logged In',
+                    'onStep': -1
+                }
+                return responseMaker(res, status.HTTP_202_ACCEPTED)
         except:
             res = {
                 'status': 'error',
@@ -306,8 +334,7 @@ def LoginTrigger(clientData, needReturn):
     if clientData.get('username') is not None:
         try:
             username = clientData.get('username')
-            userData = UserSerializer(
-                User.objects.get(username=username.lower())).data
+            userData = UserDetailsSerializer(UserDetails.objects.get(username=username.lower())).data
             if check_password(clientData['password'], userData['password']):
                 session = str(uuid.uuid4())
                 while(True):
@@ -356,8 +383,7 @@ def LoginTrigger(clientData, needReturn):
     else:
         try:
             email = clientData.get('email')
-            userData = UserSerializer(
-                User.objects.get(email=email.lower())).data
+            userData = UserDetailsSerializer(UserDetails.objects.get(email=email.lower())).data
 
             if check_password(clientData['password'], userData['password']):
 

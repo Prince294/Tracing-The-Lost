@@ -76,7 +76,11 @@ class LoggedInData(models.Model):
     username = models.CharField(max_length=100, unique=True)
 
 
+profilePath = PathAndRename('User Profile Images')
+
+
 class UserDetails(models.Model):
+    profile_image = models.ImageField(blank=True, upload_to=profilePath)
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     mobile = models.BigIntegerField(unique=True, null=True)
@@ -84,6 +88,8 @@ class UserDetails(models.Model):
     name = models.CharField(max_length=50)
     DOB = models.CharField(max_length=10)
     gender = models.CharField(max_length=10)
+    kyc_status = models.BooleanField(default=False)
+    is_verifed_user = models.BooleanField(default=False)
 
 
 @deconstructible

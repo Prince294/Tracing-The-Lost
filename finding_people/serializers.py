@@ -49,8 +49,8 @@ class UserSerializer(serializers.ModelSerializer):
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDetails
-        fields = ['id', 'username', 'email', 'mobile',
-                  'aadhar_number', 'name', 'DOB', 'gender']
+        fields = ['id', 'profile_image', 'username', 'email', 'mobile',
+                  'aadhar_number', 'name', 'DOB', 'gender', 'kyc_status', 'is_verifed_user']
 
     def validate_username(self, value):
         value = value.lower()
