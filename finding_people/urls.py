@@ -22,6 +22,7 @@ urlpatterns = [
     path('', views.home, name="home"),
     path('user', views.UserView, name="userView"),
     path('user/data', views.GetUserData, name="getUserData"),
+    path('user/delete', views.DeleteUserData, name="DeleteUser"),
     path('user/verification', views.VerifyUser, name="userVerification"),
 
     path('user/login', views.UserLogin, name="userLogin"),

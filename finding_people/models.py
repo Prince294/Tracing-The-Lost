@@ -84,12 +84,12 @@ class UserDetails(models.Model):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     mobile = models.BigIntegerField(unique=True, null=True)
-    aadhar_number = models.BigIntegerField(unique=True)
-    name = models.CharField(max_length=50)
-    DOB = models.CharField(max_length=10)
-    gender = models.CharField(max_length=10)
+    aadhar_number = models.BigIntegerField(unique=True, null=True, blank=True)
+    name = models.CharField(max_length=50, blank=True)
+    DOB = models.CharField(max_length=10, blank=True)
+    gender = models.CharField(max_length=10, blank=True)
     kyc_status = models.BooleanField(default=False)
-    is_verifed_user = models.BooleanField(default=False)
+    is_verified_user = models.BooleanField(default=False)
 
 
 @deconstructible

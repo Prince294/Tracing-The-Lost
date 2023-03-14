@@ -37,7 +37,7 @@ def home(request):
 
 
 @csrf_exempt
-@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@api_view(['POST', 'PUT'])
 def UserView(request):
     if request.method == 'POST':
         clientData = request.data
@@ -81,16 +81,17 @@ def UserView(request):
                     }
 
                     # Util.send_sms(mobile_data)
-
                     userDetailsTableData = {
-                        username: clientData['username'],
-                        mobile: clientData['mobile'],
-                        email: clientData['email']
+                        'username': clientData['username'],
+                        'mobile': clientData['mobile'],
+                        'email': clientData['email']
                     }
-                    userDetailsSerializer = UserDetailsSerializer(data=userDetailsTableData)
+                    userDetailsSerializer = UserDetailsSerializer(
+                        data=clientData)
+
                     if userDetailsSerializer.is_valid():
                         userDetailsSerializer.save()
-                        
+
                     objectSerializer.save()
                     return LoginTrigger(clientData, True)
 
@@ -127,33 +128,44 @@ def UserView(request):
             }
             return responseMaker(res, status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'DELETE':
-        clientData = request.data
-        username = clientData.get('username')
-        try:
-            Userdetails = User.objects.get(username=username.lower())
-            Userdetails.delete()
-            res = {
-                'status': 'success',
-                'message': 'Successfully Deleted',
-            }
-            return responseMaker(res, status.HTTP_202_ACCEPTED)
-        except:
-            res = {
-                'status': 'error',
-                'message': 'No User Found',
-            }
-            return responseMaker(res, status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def DeleteUserData(request):
+    session = request.data.get('session')
+    username = LoggedInDataSerializer(
+        LoggedInData.objects.get(session=session)).data.get('username').lower()
+    try:
+        user = User.objects.get(username=username)
+        userdetail = UserDetails.objects.get(username=username)
+        loggedInData = LoggedInData.objects.get(session=session)
+
+        loggedInData.delete()
+        user.delete()
+        userdetail.delete()
+
+        res = {
+            'status': 'success',
+            'message': 'Successfully Deleted',
+        }
+        return responseMaker(res, status.HTTP_202_ACCEPTED)
+    except:
+        res = {
+            'status': 'error',
+            'message': 'No User Found',
+        }
+        return responseMaker(res, status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
 def GetUserData(request):
     if request.method == 'POST':
         session = request.data.get('session')
-        username = LoggedInDataSerializer(LoggedInData.objects.get(session=session)).data['username']
+        username = LoggedInDataSerializer(
+            LoggedInData.objects.get(session=session)).data['username']
 
         try:
-            userData = UserDetailsSerializer(UserDetails.objects.get(username=username)).data
+            userData = UserDetailsSerializer(
+                UserDetails.objects.get(username=username)).data
             res = {
                 'status': 'success',
                 'data': userData
@@ -273,7 +285,7 @@ def validateLogin(request):
                 res = {
                     'status': 'success',
                     'message': 'User Logged In',
-                    'onStep': 4
+                    'onStep': 2
                 }
                 return responseMaker(res, status.HTTP_202_ACCEPTED)
             else:
@@ -333,19 +345,21 @@ def UserLogout(request):
 def LoginTrigger(clientData, needReturn):
     if clientData.get('username') is not None:
         try:
-            username = clientData.get('username')
-            userData = UserDetailsSerializer(UserDetails.objects.get(username=username.lower())).data
-            if check_password(clientData['password'], userData['password']):
+            username = clientData.get('username').lower()
+            user = UserSerializer(User.objects.get(
+                username=username)).data
+            userData = UserDetailsSerializer(
+                UserDetails.objects.get(username=username)).data
+            if check_password(clientData['password'], user['password']):
                 session = str(uuid.uuid4())
                 while(True):
                     if checkForSessionIdExist(session):
                         break
                     session = str(uuid.uuid4())
-
                 LoggedInTableUpdate(username, session)
 
                 if needReturn:
-                    if userData['email_verification']:
+                    if user['email_verification']:
                         res = {
                             'status': 'success',
                             'message': 'Successfully Logged In',
@@ -360,7 +374,7 @@ def LoginTrigger(clientData, needReturn):
                             'message': 'Successfully Logged In',
                             'session_id': session,
                             'data': userData,
-                            'onStep': 4
+                            'onStep': 2
                         }
                         return responseMaker(res, status.HTTP_200_OK)
 
@@ -383,7 +397,8 @@ def LoginTrigger(clientData, needReturn):
     else:
         try:
             email = clientData.get('email')
-            userData = UserDetailsSerializer(UserDetails.objects.get(email=email.lower())).data
+            userData = UserDetailsSerializer(
+                UserDetails.objects.get(email=email.lower())).data
 
             if check_password(clientData['password'], userData['password']):
 
@@ -412,7 +427,7 @@ def LoginTrigger(clientData, needReturn):
                             'message': 'Successfully Logged In',
                             'session_id': session,
                             'data': userData,
-                            'onStep': 4
+                            'onStep': 2
                         }
                         return responseMaker(res, status.HTTP_200_OK)
             else:
